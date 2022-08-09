@@ -9,6 +9,11 @@ build_as_root() {
     npm install -g @playwright/test
     cd /playwright
     npx playwright test
+
+
+    # TODOS: garsuga
+    # somehow tell it where to go
+    # login stuff
 }
 
 build_as_run_user() {
