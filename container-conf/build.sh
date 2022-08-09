@@ -1,5 +1,5 @@
 #!/bin/bash
-build_image_base=${sirepo_ci_base:-radiasoft/beamsim}
+build_image_base=radiasoft/fedora
 build_is_public=1
 
 build_as_root() {
