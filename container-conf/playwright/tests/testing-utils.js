@@ -1,4 +1,9 @@
-let HOST = "http://localhost:8000"
+let fs = require("fs");
+let exec = require('child_process').exec;
+
+let HOST_PROTOCOL = "http"
+let HOST_BASE = "localhost:8000"
+let HOST = HOST_PROTOCOL + "://" + HOST_BASE;
 
 export let textMatch = (pattern) => {
     return `text=${pattern}`
@@ -27,12 +32,110 @@ export let navigateToApplication = async (page, applicationName) => {
     // localhost.localdomain
 }
 
-export let loginWithEmail = async (page, applicationName, email="localhost.localdomain") => {
+export class MailManager {
+    constructor(mailPath) {
+        if(mailPath === "/" || mailPath.length == 0) {
+            throw new Error(`invalid mailPath ${mailPath}`)
+        }
+
+        if(mailPath.substring(mailPath.length - 1, mailPath.length) === "/") {
+            mailPath = mailPath.substring(0, mailPath.length - 1);
+        }
+        this.mailPath = mailPath;
+
+        this.linkPattern = /^\s*(http.+?auth-email-authorized.+?)\s*$/gm;
+    }
+
+    listMail = () => {
+        let fileNames = fs.readdirSync(this.mailPath);
+        return fileNames;
+    }
+ 
+    getFullPath = (mailFile) => {
+        return this.mailPath + "/" + mailFile;
+    }
+
+    getMailString = (mailFile) => {
+        return fs.readFileSync(this.getFullPath(mailFile), { encoding: "utf-8" });   
+    }
+
+    getSignInLink = (mailString) => {
+        let matches = [...mailString.matchAll(this.linkPattern)];
+        if(matches.length < 1) {
+            throw new Error("could not find signin link in email '" + mailString + "'");
+        }
+        if(matches.length > 1) {
+            throw new Error(`found multiple (${matches.length}) matches for signin link in email '${mailString}'`);
+        } 
+
+        return matches[0][1];
+    }
+
+    deleteEmail = (mailFile) => {
+        fs.rmSync(this.getFullPath(mailFile));
+    }
+
+    deleteAllEmails = () => {
+        fs.rmSync(this.getFullPath("*"));
+    }
+
+    getFirstEmailLink = () => {
+        let mailNames = this.listMail();
+        if(mailNames.length > 0) {
+            throw new Error(`multiple mail files were found: ${JSON.stringify(mailNames)}`);
+        }
+
+        if(mailNames.length == 0) {
+            throw new Error("no mail files were found");
+        }
+
+        let mailString = this.getMailString(mailNames[0]);
+        return this.getSignInLink(mailString);
+    }
+}
+
+function replaceHostname(link, newHost) {
+    let hostnamePattern = /(http[s]?:\/\/.+?)\//g
+    let matches = [...link.matchAll(hostnamePattern)]
+
+    if(matches.length !== 1) {
+        throw new Error(`hostname replacement expected exactly one match for hostname pattern: link=${link}`);
+    }
+
+    let matchedHostname = matches[0][1];
+    return link.replace(matchedHostname, newHost);
+}
+
+async function getUserHome() {
+    let homePromise = new Promise((resolve, reject) => {
+        exec('echo ~',
+            function (error, stdout, stderr) {
+                if (error !== null) {
+                    reject(error)
+                }
+                resolve(stdout.trim());
+            });
+    })
+
+    return await homePromise;
+}
+
+export let loginWithEmail = async (page, applicationName, email="vagrant+test@localhost.localdomain") => {
     await page.goto(HOST + "/" + applicationName + "#/login-with/email");
 
     let emailFormGroup = page.locator(".form-group", { has: page.locator(textFuzzyEquals("Your Email")) });
-    await emailFormGroup.locator(".input").type(email);
-    await page.locator(".button").locator(textFuzzyEquals("Continue")).click();
+    await page.waitForTimeout(1000);
+    await emailFormGroup.locator("input").type(email);
+    await page.waitForTimeout(1000);
+    await page.locator("button").locator(textFuzzyEquals("Continue")).click();
+
+    await page.waitForTimeout(1000);
+
+    let mailManager = new MailManager((await getUserHome()) + "/mail");
+    let link = replaceHostname(mailManager.getFirstEmailLink(), HOST);
+    mailManager.deleteAllEmails();
+
+    await page.goto(link);
 }
 
 export let navigateToSimulation = async (page, simFolderNames) => {
