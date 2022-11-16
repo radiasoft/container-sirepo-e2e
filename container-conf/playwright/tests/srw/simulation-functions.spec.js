@@ -1,8 +1,12 @@
 const { test, expect } = require('@playwright/test');
 const { loginWithEmail, navigateToApplication, openPanelOptions, navigateToSimulation, textFuzzyEquals, findPlotByTitle, waitForPlotToLoad, getDownloadContents, navigateToFirstSimulation, discardSimulationChanges, waitForPlotLoading, startDownload, downloadSimulationZip, downloadPythonSource } = require('../testing-utils.js')
 
+test('SRW Login With Email', async({ page, context }) => {
+    await context.clearCookies();
+    await loginWithEmail(page, "srw");
+})
+
 test('SRW Discard Changes To Example', async ({page}) => {
-    await loginWithEmail(page, 'srw');
     await navigateToApplication(page, 'srw');
     await navigateToFirstSimulation(page);
     await discardSimulationChanges(page);
@@ -10,7 +14,6 @@ test('SRW Discard Changes To Example', async ({page}) => {
 })
 
 test('SRW Change Value On Example', async ({page}) => {
-    await loginWithEmail(page, 'srw');
     await navigateToApplication(page, 'srw');
     await navigateToSimulation(page, ['Light Source Facilities', 'NSLS-II', 'NSLS-II CHX beamline', 'NSLS-II CHX beamline']);
     let plotLocator = await findPlotByTitle(page, 'Single-Electron Spectrum, 20.5m');
@@ -34,7 +37,6 @@ const namedFolderLocator = (page, name) => {
 }
 
 test('SRW Create & Delete Folder', async ({page}) => {
-    await loginWithEmail(page, 'srw');
     await navigateToApplication(page, 'srw');
     await openNewFolderMenu(page);
     await page.waitForTimeout(1500); // garsuga TODO: why does a wait need to be placed here for input typing to work
@@ -48,7 +50,6 @@ test('SRW Create & Delete Folder', async ({page}) => {
 })
 
 test('SRW Plot2d Report Load and Raw Data Download', async ({ page }) => {
-    await loginWithEmail(page, 'srw');
     await navigateToApplication(page, 'srw');
     test.slow();
     await navigateToSimulation(page, ['Light Source Facilities', 'NSLS-II', 'NSLS-II CHX beamline', 'NSLS-II CHX beamline'])
@@ -62,7 +63,6 @@ test('SRW Plot2d Report Load and Raw Data Download', async ({ page }) => {
 });
 
 test('SRW Download Simulation Zip', async({ page }) => {
-    await loginWithEmail(page, 'srw');
     await navigateToApplication(page, 'srw');
     await navigateToFirstSimulation(page);
     let download = await startDownload(page, downloadSimulationZip(page));
@@ -71,7 +71,6 @@ test('SRW Download Simulation Zip', async({ page }) => {
 })
 
 test('SRW Download Python Source', async({ page }) => {
-    await loginWithEmail(page, 'srw');
     await navigateToApplication(page, 'srw');
     await navigateToFirstSimulation(page);
     let download = await startDownload(page, downloadPythonSource(page));

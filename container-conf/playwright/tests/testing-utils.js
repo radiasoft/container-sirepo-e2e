@@ -76,21 +76,42 @@ export class MailManager {
     }
 
     deleteAllEmails = () => {
-        fs.rmSync(this.getFullPath("*"));
+        for(let mailFile of this.listMail()) {
+            fs.rmSync(this.getFullPath(mailFile));
+        }
     }
 
-    getFirstEmailLink = () => {
-        let mailNames = this.listMail();
-        if(mailNames.length > 0) {
+    getFirstEmailLink = async (interval, retries) => {
+        let mailNames = await this.waitForFile(interval, retries);
+        if(mailNames.length > 1) {
             throw new Error(`multiple mail files were found: ${JSON.stringify(mailNames)}`);
         }
 
-        if(mailNames.length == 0) {
+        if(mailNames.length < 1) {
             throw new Error("no mail files were found");
         }
 
         let mailString = this.getMailString(mailNames[0]);
         return this.getSignInLink(mailString);
+    }
+
+    waitForFile = async (interval, retries) => {
+        let retriesLeft = retries;
+        return await new Promise((resolve, reject) => {
+            let t = setInterval(() => {
+                let files = this.listMail();
+                if(files.length > 0) {
+                    clearInterval(t);
+                    resolve(files);
+                } else {
+                    retriesLeft--;
+                    if(retriesLeft < 0) {
+                        clearInterval(t);
+                        reject(new Error("did not detect a mail file in time"));
+                    }
+                }
+            }, interval)
+        })
     }
 }
 
@@ -120,19 +141,18 @@ async function getUserHome() {
     return await homePromise;
 }
 
-export let loginWithEmail = async (page, applicationName, email="vagrant+test@localhost.localdomain") => {
-    await page.goto(HOST + "/" + applicationName + "#/login-with/email");
+export let loginWithEmail = async (page, applicationName, email="vagrant@localhost.localdomain") => {
+    let mailManager = new MailManager((await getUserHome()) + "/mail");
+    mailManager.deleteAllEmails();
 
+    await page.goto(HOST + "/" + applicationName + "#/login-with/email");
     let emailFormGroup = page.locator(".form-group", { has: page.locator(textFuzzyEquals("Your Email")) });
     await page.waitForTimeout(1000);
     await emailFormGroup.locator("input").type(email);
     await page.waitForTimeout(1000);
     await page.locator("button").locator(textFuzzyEquals("Continue")).click();
-
-    await page.waitForTimeout(1000);
-
-    let mailManager = new MailManager((await getUserHome()) + "/mail");
-    let link = replaceHostname(mailManager.getFirstEmailLink(), HOST);
+    
+    let link = replaceHostname((await mailManager.getFirstEmailLink(500, 30)), HOST);
     mailManager.deleteAllEmails();
 
     await page.goto(link);
