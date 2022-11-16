@@ -141,6 +141,20 @@ async function getUserHome() {
     return await homePromise;
 }
 
+let NEEDS_EMAIL_LOGIN = false;
+
+export let loginIfNeeded = async (page, applicationName) => {
+    if(NEEDS_EMAIL_LOGIN) {
+        loginWithEmail(page, applicationName);
+    } else {
+        loginAsGuest(page);
+    }
+}
+
+export let loginAsGuest = async (page) => {
+    await page.goto(HOST + "/" + applicationName + "#/login-with/guest");
+}
+
 export let loginWithEmail = async (page, applicationName, email="vagrant@localhost.localdomain") => {
     let mailManager = new MailManager((await getUserHome()) + "/mail");
     mailManager.deleteAllEmails();
@@ -161,17 +175,17 @@ export let loginWithEmail = async (page, applicationName, email="vagrant@localho
 export let navigateToSimulation = async (page, simFolderNames) => {
     for(var path of simFolderNames) {
         //await page.waitForTimeout(1000);
-        await page.locator("div.sr-iconset div.sr-thumbnail-item span")
-        .locator(textFuzzyEquals(path)).click();
+        await page.locator("div.sr-thumbnail span")
+        .locator(textFuzzyEquals(path)).dblClick();
     }
 }
 
 export let navigateToFirstSimulation = async (page) => {
     let enterNextItem = async (page) => {
-        let firstItemLocator = page.locator("div.sr-iconset div.sr-thumbnail-item").first();
+        let firstItemLocator = page.locator(".sr-icon-col div.sr-thumbnail").first();
         let elementHandle = await firstItemLocator.elementHandle();
-        let isFolder = await elementHandle.$eval(".sr-item-icon", (node) => node.classList.contains("sr-folder-icon"));
-        await firstItemLocator.locator(".sr-thumbnail-title").first().click();
+        let isFolder = await elementHandle.$eval("span.glyphicon", (node) => node.classList.contains("glyphicon-folder-close"));
+        await firstItemLocator.first().dblClick();
         if(isFolder) {
             await enterNextItem(page);
         }
