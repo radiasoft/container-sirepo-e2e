@@ -145,13 +145,13 @@ let NEEDS_EMAIL_LOGIN = false;
 
 export let loginIfNeeded = async (page, applicationName) => {
     if(NEEDS_EMAIL_LOGIN) {
-        loginWithEmail(page, applicationName);
+        await loginWithEmail(page, applicationName);
     } else {
-        loginAsGuest(page);
+        await loginAsGuest(page, applicationName);
     }
 }
 
-export let loginAsGuest = async (page) => {
+export let loginAsGuest = async (page, applicationName) => {
     await page.goto(HOST + "/" + applicationName + "#/login-with/guest");
 }
 
@@ -176,16 +176,18 @@ export let navigateToSimulation = async (page, simFolderNames) => {
     for(var path of simFolderNames) {
         //await page.waitForTimeout(1000);
         await page.locator("div.sr-thumbnail span")
-        .locator(textFuzzyEquals(path)).dblClick();
+        .locator(textFuzzyEquals(path)).click();
+        await page.waitForTimeout(500);
     }
 }
 
 export let navigateToFirstSimulation = async (page) => {
     let enterNextItem = async (page) => {
-        let firstItemLocator = page.locator(".sr-icon-col div.sr-thumbnail").first();
+        let firstItemLocator = page.locator(".sr-icon-col div.sr-thumbnail", { has: page.locator("span.glyphicon") }).first();
         let elementHandle = await firstItemLocator.elementHandle();
         let isFolder = await elementHandle.$eval("span.glyphicon", (node) => node.classList.contains("glyphicon-folder-close"));
-        await firstItemLocator.first().dblClick();
+        await firstItemLocator.first().dblclick();
+        await page.waitForTimeout(250);
         if(isFolder) {
             await enterNextItem(page);
         }
@@ -195,7 +197,7 @@ export let navigateToFirstSimulation = async (page) => {
 }
 
 export let openSimulationOptionsMenu = async(page) => {
-    await page.locator(".sr-settings-menu-toggle").click();
+    await page.locator("a.dropdown-toggle > span.glyphicon.glyphicon-cog").click();
 }
 
 export let discardSimulationChanges = async(page) => {
