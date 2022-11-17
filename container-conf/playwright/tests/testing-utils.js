@@ -3,7 +3,7 @@ let exec = require('child_process').exec;
 
 let HOST_PROTOCOL = "http"
 let HOST_BASE = "localhost:8000"
-let HOST = HOST_PROTOCOL + "://" + HOST_BASE;
+export let HOST = HOST_PROTOCOL + "://" + HOST_BASE;
 let NEEDS_EMAIL_LOGIN = true;
 
 export let textMatch = (pattern) => {
@@ -166,9 +166,23 @@ export let loginWithEmail = async (page, applicationName, email="vagrant@localho
     await page.locator("button").locator(textFuzzyEquals("Continue")).click();
     
     let link = replaceHostname((await mailManager.getFirstEmailLink(500, 30)), HOST);
+    console.log("mail before delete: " + JSON.stringify(mailManager.listMail()))
     mailManager.deleteAllEmails();
-
+    console.log("mail after delete: " + JSON.stringify(mailManager.listMail()))
+    
+    console.log(link);
     await page.goto(link);
+
+    await page.waitForTimeout(250);
+    try {
+        let continueButton = page.locator("button", { has: page.locator(textFuzzyEquals("Confirm")) });
+        await continueButton.waitFor({ state: 'attached', timeout: 2500 });
+        await continueButton.click();
+    } catch {
+        await page.locator("input[name=displayName]").type("Test");
+        await page.waitForTimeout(250);
+        await page.locator("button", { has: page.locator(textFuzzyEquals("Submit")) }).click();
+    }
 }
 
 export let navigateToSimulation = async (page, simFolderNames) => {

@@ -1,14 +1,20 @@
 const { test, expect } = require('@playwright/test');
-const { loginIfNeeded, navigateToApplication, openPanelOptions, navigateToSimulation, textFuzzyEquals, findPlotByTitle, waitForPlotToLoad, getDownloadContents, navigateToFirstSimulation, discardSimulationChanges, waitForPlotLoading, startDownload, downloadSimulationZip, downloadPythonSource } = require('../testing-utils.js')
+const { loginIfNeeded, navigateToApplication, openPanelOptions, navigateToSimulation, textFuzzyEquals, findPlotByTitle, waitForPlotToLoad, getDownloadContents, navigateToFirstSimulation, discardSimulationChanges, waitForPlotLoading, startDownload, downloadSimulationZip, downloadPythonSource, HOST } = require('../testing-utils.js')
 
 test('SRW Login With Email', async({ page, context }) => {
     await context.clearCookies();
     await loginIfNeeded(page, "srw");
+    await page.goto(HOST + "/srw#/simulations")
+    await page.waitForTimeout(2500);
+    console.log(page.url());
 })
 
-test('SRW Discard Changes To Example', async ({page}) => {
+test('SRW Discard Changes To Example', async ({ page, context }) => {
+    await context.clearCookies();
     await loginIfNeeded(page, "srw");
     await navigateToApplication(page, 'srw');
+    await page.waitForTimeout(2500);
+    console.log(page.url());
     await navigateToFirstSimulation(page);
     await discardSimulationChanges(page);
     await page.waitForTimeout(2000);
