@@ -183,6 +183,7 @@ export let loginWithEmail = async (page, applicationName, email="vagrant@localho
         await page.waitForTimeout(250);
         await page.locator("button", { has: page.locator(textFuzzyEquals("Submit")) }).click();
     }
+    await page.waitForURL(`${HOST}/${applicationName}#/simulations`)
 }
 
 export let navigateToSimulation = async (page, simFolderNames) => {

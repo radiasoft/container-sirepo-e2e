@@ -4,7 +4,7 @@ const { loginIfNeeded, navigateToApplication, openPanelOptions, navigateToSimula
 test('SRW Login With Email', async({ page, context }) => {
     await context.clearCookies();
     await loginIfNeeded(page, "srw");
-    await page.goto(HOST + "/srw#/simulations")
+    await navigateToApplication(page, 'srw');
     await page.waitForTimeout(2500);
     console.log(page.url());
 })
