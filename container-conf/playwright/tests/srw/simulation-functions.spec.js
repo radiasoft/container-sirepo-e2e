@@ -5,19 +5,15 @@ test('SRW Login With Email', async({ page, context }) => {
     await context.clearCookies();
     await loginIfNeeded(page, "srw");
     await navigateToApplication(page, 'srw');
-    await page.waitForTimeout(2500);
-    console.log(page.url());
 })
 
 test('SRW Discard Changes To Example', async ({ page, context }) => {
     await context.clearCookies();
     await loginIfNeeded(page, "srw");
     await navigateToApplication(page, 'srw');
-    await page.waitForTimeout(2500);
-    console.log(page.url());
+    await page.waitForTimeout(1000);
     await navigateToFirstSimulation(page);
     await discardSimulationChanges(page);
-    await page.waitForTimeout(2000);
 })
 
 // garsuga: some tests are commented out because they were supposed to go with a merge

@@ -22,10 +22,15 @@ build_as_root() {
 }
 
 build_as_run_user() {
-    npm i -g npx
     cd "$build_guest_conf"
     cp -a playwright "$HOME"
     cd ~/playwright
+    cat >> ~/.post_bivio_bashrc << 'EOF'
+export PLAYWRIGHT_BROWSERS_PATH=$HOME/playwright-browsers 
+EOF
+    cat ~/.post_bivio_bashrc
+    install_source_bashrc
+    npm i -g npx
     npm i @playwright/test
     npx playwright install
 }
