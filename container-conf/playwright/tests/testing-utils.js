@@ -179,7 +179,7 @@ export let loginWithEmail = async (page, applicationName, email="vagrant@localho
         await continueButton.waitFor({ state: 'attached', timeout: 2500 });
         await continueButton.click();
     } catch {
-        await page.locator("input[name=displayName]").type("Test");
+        await page.locator("input[name=displayName]").type("Test"); // TODO unique name
         await page.waitForTimeout(250);
         await page.locator("button", { has: page.locator(textFuzzyEquals("Submit")) }).click();
     }
