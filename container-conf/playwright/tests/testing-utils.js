@@ -166,6 +166,7 @@ export let loginWithEmail = async (page, applicationName, email="vagrant@localho
     await page.locator("button").locator(textFuzzyEquals("Continue")).click();
     
     //let link = replaceHostname((await mailManager.getFirstEmailLink(500, 30)), HOST);
+    let link = await mailManager.getFirstEmailLink(500, 30);
     //console.log("mail before delete: " + JSON.stringify(mailManager.listMail()))
     mailManager.deleteAllEmails();
     //console.log("mail after delete: " + JSON.stringify(mailManager.listMail()))
