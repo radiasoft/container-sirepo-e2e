@@ -39,41 +39,37 @@ export class MailManager {
         }
         this.mailPath = mailPath;
 
-        this.linkPattern = /^\s*(http.+?auth-email-authorized.+?)\s*$/gm;
+        this.linkPattern = /https?:\/\/[^\/\s]+\/auth-email-authorized\/\w+\/\w+/i;
     }
 
     listMail = () => {
-        let fileNames = fs.readdirSync(this.mailPath);
-        return fileNames;
+        return fs.readdirSync(this.mailPath);
     }
  
-    getFullPath = (mailFile) => {
+    mailAbsPath = (mailFile) => {
         return this.mailPath + "/" + mailFile;
     }
 
     getMailString = (mailFile) => {
-        return fs.readFileSync(this.getFullPath(mailFile), { encoding: "utf-8" });   
+        return fs.readFileSync(this.mailAbsPath(mailFile), { encoding: "utf-8" });   
     }
 
     getSignInLink = (mailString) => {
         let matches = [...mailString.matchAll(this.linkPattern)];
         if(matches.length < 1) {
-            throw new Error("could not find signin link in email '" + mailString + "'");
+            throw new Error(`could not find signin link in email: ${mailString}`);
         }
-        if(matches.length > 1) {
-            throw new Error(`found multiple (${matches.length}) matches for signin link in email '${mailString}'`);
-        } 
 
         return matches[0][1];
     }
 
     deleteEmail = (mailFile) => {
-        fs.rmSync(this.getFullPath(mailFile));
+        fs.rmSync(this.mailAbsPath(mailFile));
     }
 
     deleteAllEmails = () => {
         for(let mailFile of this.listMail()) {
-            fs.rmSync(this.getFullPath(mailFile));
+            fs.rmSync(this.mailAbsPath(mailFile));
         }
     }
 
@@ -160,11 +156,7 @@ export let loginWithEmail = async (page, applicationName, email="vagrant@localho
     await page.waitForTimeout(1000);
     await page.locator("button").locator(wholeWordNoWhitespace("Continue")).click();
     
-    //let link = replaceHostname((await mailManager.getFirstEmailLink(500, 30)), HOST);
     let link = await mailManager.getFirstEmailLink(500, 30);
-    //console.log("mail before delete: " + JSON.stringify(mailManager.listMail()))
-    mailManager.deleteAllEmails();
-    //console.log("mail after delete: " + JSON.stringify(mailManager.listMail()))
     
     console.log(link);
     await page.goto(link);
