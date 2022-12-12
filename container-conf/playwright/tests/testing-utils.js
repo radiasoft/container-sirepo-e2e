@@ -163,11 +163,8 @@ export let loginWithEmail = async (page, appName, email="vagrant@localhost.local
     await emailFormGroup.locator("input").type(email);
     await page.waitForTimeout(1000);
     await page.locator("button").locator(wholeWordNoWhitespace("Continue")).click();
-
-    let link = await mailManager.getFirstEmailLink(500, 30);
     
-    console.log(link);
-    await page.goto(link);
+    await page.goto(await mailManager.getFirstEmailLink(500, 30));
 
     await page.waitForTimeout(250);
     try {
