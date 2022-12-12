@@ -30,11 +30,11 @@ export let navigateToApplication = async (page, applicationName) => {
 
 export class MailManager {
     constructor(mailPath) {
-        if(mailPath === "/" || mailPath.length == 0) {
+        if (mailPath === "/" || mailPath.length == 0) {
             throw new Error(`invalid mailPath ${mailPath}`)
         }
 
-        if(mailPath.substring(mailPath.length - 1, mailPath.length) === "/") {
+        if (mailPath.substring(mailPath.length - 1, mailPath.length) === "/") {
             mailPath = mailPath.substring(0, mailPath.length - 1);
         }
         this.mailPath = mailPath;
@@ -56,7 +56,7 @@ export class MailManager {
 
     getSignInLink = (mailString) => {
         let matches = [...mailString.matchAll(this.linkPattern)];
-        if(matches.length < 1) {
+        if (matches.length < 1) {
             throw new Error(`could not find signin link in email: ${mailString}`);
         }
 
@@ -68,18 +68,18 @@ export class MailManager {
     }
 
     deleteAllEmails = () => {
-        for(let mailFile of this.listMail()) {
+        for (let mailFile of this.listMail()) {
             fs.rmSync(this.mailAbsPath(mailFile));
         }
     }
 
     getFirstEmailLink = async (interval, retries) => {
         let mailNames = await this.waitForFile(interval, retries);
-        if(mailNames.length > 1) {
+        if (mailNames.length > 1) {
             throw new Error(`multiple mail files were found: ${JSON.stringify(mailNames)}`);
         }
 
-        if(mailNames.length < 1) {
+        if (mailNames.length < 1) {
             throw new Error("no mail files were found");
         }
 
@@ -92,12 +92,13 @@ export class MailManager {
         return await new Promise((resolve, reject) => {
             let t = setInterval(() => {
                 let files = this.listMail();
-                if(files.length > 0) {
+                if (files.length > 0) {
                     clearInterval(t);
                     resolve(files);
-                } else {
+                } 
+                else {
                     retriesLeft--;
-                    if(retriesLeft < 0) {
+                    if (retriesLeft < 0) {
                         clearInterval(t);
                         reject(new Error("did not detect a mail file in time"));
                     }
@@ -111,7 +112,7 @@ function replaceHostname(link, newHost) {
     let hostnamePattern = /(http[s]?:\/\/.+?)\//g
     let matches = [...link.matchAll(hostnamePattern)]
 
-    if(matches.length !== 1) {
+    if (matches.length !== 1) {
         throw new Error(`hostname replacement expected exactly one match for hostname pattern: link=${link}`);
     }
 
@@ -136,7 +137,8 @@ async function getUserHome() {
 export let loginIfNeeded = async (page, applicationName) => {
     if (NEEDS_EMAIL_LOGIN) {
         await loginWithEmail(page, applicationName);
-    } else {
+    } 
+    else {
         await loginAsGuest(page, applicationName);
     }
 }
@@ -166,7 +168,8 @@ export let loginWithEmail = async (page, applicationName, email="vagrant@localho
         let continueButton = page.locator("button", { has: page.locator(wholeWordNoWhitespace("Confirm")) });
         await continueButton.waitFor({ state: 'attached', timeout: 2500 });
         await continueButton.click();
-    } catch {
+    } 
+    catch {
         await page.locator("input[name=displayName]").type("Test"); // TODO unique name
         await page.waitForTimeout(250);
         await page.locator("button", { has: page.locator(wholeWordNoWhitespace("Submit")) }).click();
@@ -175,7 +178,7 @@ export let loginWithEmail = async (page, applicationName, email="vagrant@localho
 }
 
 export let navigateToSimulation = async (page, simFolderNames) => {
-    for(var path of simFolderNames) {
+    for (var path of simFolderNames) {
         //await page.waitForTimeout(1000);
         await page.locator("div.sr-thumbnail span")
         .locator(wholeWordNoWhitespace(path)).click();
@@ -190,7 +193,7 @@ export let navigateToFirstSimulation = async (page) => {
         let isFolder = await elementHandle.$eval("span.glyphicon", (node) => node.classList.contains("glyphicon-folder-close"));
         await firstItemLocator.first().dblclick();
         await page.waitForTimeout(250);
-        if(isFolder) {
+        if (isFolder) {
             await enterNextItem(page);
         }
     }
