@@ -39,6 +39,12 @@ export class MailManager {
         }
         this.mailPath = mailPath;
 
+        fs.accessSync(mailPath, fs.constants.R_OK | fs.constants.W_OK);
+        let stats = fs.statSync(mailPath);
+        if (!stats.isDirectory()) {
+            throw new Error(`mailPath="${mailPath}" did not point to directory`);
+        }
+
         this.linkPattern = /https?:\/\/[^\/\s]+\/auth-email-authorized\/\w+\/\w+/i;
     }
 
