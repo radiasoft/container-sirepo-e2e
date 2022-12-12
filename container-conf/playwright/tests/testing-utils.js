@@ -134,7 +134,7 @@ async function getUserHome() {
 }
 
 export let loginIfNeeded = async (page, applicationName) => {
-    if(NEEDS_EMAIL_LOGIN) {
+    if (NEEDS_EMAIL_LOGIN) {
         await loginWithEmail(page, applicationName);
     } else {
         await loginAsGuest(page, applicationName);
@@ -155,7 +155,7 @@ export let loginWithEmail = async (page, applicationName, email="vagrant@localho
     await emailFormGroup.locator("input").type(email);
     await page.waitForTimeout(1000);
     await page.locator("button").locator(wholeWordNoWhitespace("Continue")).click();
-    
+
     let link = await mailManager.getFirstEmailLink(500, 30);
     
     console.log(link);
