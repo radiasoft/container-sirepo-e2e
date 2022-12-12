@@ -1,9 +1,7 @@
 let fs = require("fs");
 let exec = require('child_process').exec;
 
-let HOST_PROTOCOL = "http"
-let HOST_BASE = "localhost:8000"
-export let HOST = HOST_PROTOCOL + "://" + HOST_BASE;
+export let HOST = "http://localhost:8000";
 let NEEDS_EMAIL_LOGIN = true;
 
 export let textMatch = (pattern) => {
