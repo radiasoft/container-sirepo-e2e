@@ -61,7 +61,7 @@ export class MailManager {
     }
 
     getSignInLink = (mailString) => {
-        let matches = [...mailString.matchAll(this.linkPattern)];
+        let matches = [...mailString.matchAll(this.linkPattern),];
         if (matches.length < 1) {
             throw new Error(`could not find signin link in email: ${mailString}`);
         }
@@ -116,7 +116,7 @@ export class MailManager {
 
 function replaceHostname(link, newHost) {
     let hostnamePattern = /(http[s]?:\/\/.+?)\//g
-    let matches = [...link.matchAll(hostnamePattern)]
+    let matches = [...link.matchAll(hostnamePattern),]
 
     if (matches.length !== 1) {
         throw new Error(`hostname replacement expected exactly one match for hostname pattern: link=${link}`);
@@ -257,7 +257,7 @@ export let openPanelOptions = async (panelLocator) => {
 }
 
 export let startDownload = async (page, downloadCausePromise) => {
-    let [ download ] = await Promise.all([
+    let [ download, ] = await Promise.all([
         page.waitForEvent("download"),
         downloadCausePromise
     ])
