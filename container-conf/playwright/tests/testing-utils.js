@@ -24,8 +24,8 @@ export let wholeWordNoWhitespace = (pattern) => {
     return textMatch(regexPattern(wholeWord(tolerateWhitespace(pattern))))
 }
 
-export let navigateToApplication = async (page, applicationName) => {
-    await page.goto(HOST + "/" + applicationName);
+export let navigateToApp = async (page, appName) => {
+    await page.goto(HOST + "/" + appName);
 }
 
 export class MailManager {
@@ -134,24 +134,24 @@ async function getUserHome() {
     return await homePromise;
 }
 
-export let loginIfNeeded = async (page, applicationName) => {
+export let loginIfNeeded = async (page, appName) => {
     if (NEEDS_EMAIL_LOGIN) {
-        await loginWithEmail(page, applicationName);
+        await loginWithEmail(page, appName);
     } 
     else {
-        await loginAsGuest(page, applicationName);
+        await loginAsGuest(page, appName);
     }
 }
 
-export let loginAsGuest = async (page, applicationName) => {
-    await page.goto(HOST + "/" + applicationName + "#/login-with/guest");
+export let loginAsGuest = async (page, appName) => {
+    await page.goto(HOST + "/" + appName + "#/login-with/guest");
 }
 
-export let loginWithEmail = async (page, applicationName, email="vagrant@localhost.localdomain") => {
+export let loginWithEmail = async (page, appName, email="vagrant@localhost.localdomain") => {
     let mailManager = new MailManager((await getUserHome()) + "/mail");
     mailManager.deleteAllEmails();
 
-    await page.goto(HOST + "/" + applicationName + "#/login-with/email");
+    await page.goto(HOST + "/" + appName + "#/login-with/email");
     let emailFormGroup = page.locator(".form-group", { has: page.locator(wholeWordNoWhitespace("Your Email")) });
     await page.waitForTimeout(1000);
     await emailFormGroup.locator("input").type(email);
@@ -174,7 +174,7 @@ export let loginWithEmail = async (page, applicationName, email="vagrant@localho
         await page.waitForTimeout(250);
         await page.locator("button", { has: page.locator(wholeWordNoWhitespace("Submit")) }).click();
     }
-    await page.waitForURL(`${HOST}/${applicationName}#/simulations`)
+    await page.waitForURL(`${HOST}/${appName}#/simulations`)
 }
 
 export let navigateToSimulation = async (page, simFolderNames) => {
