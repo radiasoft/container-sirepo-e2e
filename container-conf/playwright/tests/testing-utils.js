@@ -42,7 +42,7 @@ export class MailManager {
         fs.accessSync(mailPath, fs.constants.R_OK | fs.constants.W_OK);
         let stats = fs.statSync(mailPath);
         if (!stats.isDirectory()) {
-            throw new Error(`mailPath="${mailPath}" did not point to directory`);
+            throw new Error(`mailPath=${mailPath} did not point to directory`);
         }
 
         this.linkPattern = /https?:\/\/[^\/\s]+\/auth-email-authorized\/\w+\/\w+/i;
@@ -106,7 +106,7 @@ export class MailManager {
                     retriesLeft--;
                     if (retriesLeft < 0) {
                         clearInterval(t);
-                        reject(new Error("did not detect a mail file in time"));
+                        reject(new Error(`no files were present in mailPath=${this.mailPath} directory before timeout`));
                     }
                 }
             }, interval)
