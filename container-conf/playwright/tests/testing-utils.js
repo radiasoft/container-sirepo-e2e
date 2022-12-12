@@ -22,15 +22,12 @@ export let tolerateWhitespace = (pattern) => {
     return `\\s*${pattern}\\s*`
 }
 
-export let textFuzzyEquals = (pattern) => {
+export let wholeWordNoWhitespace = (pattern) => {
     return textMatch(regexPattern(wholeWord(tolerateWhitespace(pattern))))
 }
 
 export let navigateToApplication = async (page, applicationName) => {
     await page.goto(HOST + "/" + applicationName);
-    //await page.waitForTimeout(1000);
-    //await page.locator(textFuzzyEquals("Sign in as Guest")).click();
-    // localhost.localdomain
 }
 
 export class MailManager {
@@ -159,11 +156,11 @@ export let loginWithEmail = async (page, applicationName, email="vagrant@localho
     mailManager.deleteAllEmails();
 
     await page.goto(HOST + "/" + applicationName + "#/login-with/email");
-    let emailFormGroup = page.locator(".form-group", { has: page.locator(textFuzzyEquals("Your Email")) });
+    let emailFormGroup = page.locator(".form-group", { has: page.locator(wholeWordNoWhitespace("Your Email")) });
     await page.waitForTimeout(1000);
     await emailFormGroup.locator("input").type(email);
     await page.waitForTimeout(1000);
-    await page.locator("button").locator(textFuzzyEquals("Continue")).click();
+    await page.locator("button").locator(wholeWordNoWhitespace("Continue")).click();
     
     //let link = replaceHostname((await mailManager.getFirstEmailLink(500, 30)), HOST);
     let link = await mailManager.getFirstEmailLink(500, 30);
@@ -176,13 +173,13 @@ export let loginWithEmail = async (page, applicationName, email="vagrant@localho
 
     await page.waitForTimeout(250);
     try {
-        let continueButton = page.locator("button", { has: page.locator(textFuzzyEquals("Confirm")) });
+        let continueButton = page.locator("button", { has: page.locator(wholeWordNoWhitespace("Confirm")) });
         await continueButton.waitFor({ state: 'attached', timeout: 2500 });
         await continueButton.click();
     } catch {
         await page.locator("input[name=displayName]").type("Test"); // TODO unique name
         await page.waitForTimeout(250);
-        await page.locator("button", { has: page.locator(textFuzzyEquals("Submit")) }).click();
+        await page.locator("button", { has: page.locator(wholeWordNoWhitespace("Submit")) }).click();
     }
     await page.waitForURL(`${HOST}/${applicationName}#/simulations`)
 }
@@ -191,7 +188,7 @@ export let navigateToSimulation = async (page, simFolderNames) => {
     for(var path of simFolderNames) {
         //await page.waitForTimeout(1000);
         await page.locator("div.sr-thumbnail span")
-        .locator(textFuzzyEquals(path)).click();
+        .locator(wholeWordNoWhitespace(path)).click();
         await page.waitForTimeout(500);
     }
 }
@@ -217,13 +214,13 @@ export let openSimulationOptionsMenu = async(page) => {
 
 export let discardSimulationChanges = async(page) => {
     await openSimulationOptionsMenu(page);
-    await page.locator(textFuzzyEquals("Discard Changes to Example")).click();
-    await page.locator("div.modal-dialog").locator(textFuzzyEquals("Discard Changes")).click();
+    await page.locator(wholeWordNoWhitespace("Discard Changes to Example")).click();
+    await page.locator("div.modal-dialog").locator(wholeWordNoWhitespace("Discard Changes")).click();
 }
 
 export let findPlotByTitle = (page, title) => {
     //return page.locator(`div[data-panel-title*="${title}"]`);
-    return page.locator("div.panel", {has: page.locator(textFuzzyEquals(title))});
+    return page.locator("div.panel", {has: page.locator(wholeWordNoWhitespace(title))});
 }
 
 export let waitForPlotToLoad = async (plotLocator, timeout) => {
@@ -270,10 +267,10 @@ export let startDownload = async (page, downloadCausePromise) => {
 
 export let downloadSimulationZip = async (page) => {
     await page.locator(".sr-settings-menu-toggle").click();
-    await page.locator(textFuzzyEquals("Export as ZIP")).click();
+    await page.locator(wholeWordNoWhitespace("Export as ZIP")).click();
 }
 
 export let downloadPythonSource = async (page) => {
     await page.locator(".sr-settings-menu-toggle").click();
-    await page.locator(textFuzzyEquals("Python Source")).click();
+    await page.locator(wholeWordNoWhitespace("Python Source")).click();
 }
