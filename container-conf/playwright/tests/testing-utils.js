@@ -61,12 +61,12 @@ export class MailManager {
     }
 
     getSignInLink = (mailString) => {
-        let matches = [...mailString.matchAll(this.linkPattern),];
+        let matches = [...mailString.match(this.linkPattern),];
         if (matches.length < 1) {
             throw new Error(`could not find signin link in email: ${mailString}`);
         }
 
-        return matches[0][1];
+        return matches[0];
     }
 
     deleteEmail = (mailFile) => {
@@ -175,7 +175,7 @@ export let loginWithEmail = async (page, appName, email="vagrant@localhost.local
     catch {
         await page.locator("input[name=displayName]").type("Test"); // TODO unique name
         await page.waitForTimeout(250);
-        await page.locator("button", { has: page.locator(wholeWordNoWhitespace("Submit")) }).click();
+        await page.locator("form .form-group button.btn-primary", { has: page.locator(wholeWordNoWhitespace("Submit")) }).click(); // this wont work for other apps, need to change page source to add new selectors
     }
     await page.waitForURL(`${HOST}/${appName}#/simulations`)
 }
@@ -191,6 +191,7 @@ export let navigateToSimulation = async (page, simFolderNames) => {
 
 export let navigateToFirstSimulation = async (page) => {
     let enterNextItem = async (page) => {
+        console.log("entering next item");
         let firstItemLocator = page.locator(".sr-icon-col div.sr-thumbnail", { has: page.locator("span.glyphicon") }).first();
         let isFolder = await (await firstItemLocator.elementHandle()).$eval("span.glyphicon", (node) => node.classList.contains("glyphicon-folder-close"));
         await firstItemLocator.first().dblclick();
