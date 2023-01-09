@@ -191,7 +191,6 @@ export let navigateToSimulation = async (page, simFolderNames) => {
 
 export let navigateToFirstSimulation = async (page) => {
     let enterNextItem = async (page) => {
-        console.log("entering next item");
         let firstItemLocator = page.locator(".sr-icon-col div.sr-thumbnail", { has: page.locator("span.glyphicon") }).first();
         let isFolder = await (await firstItemLocator.elementHandle()).$eval("span.glyphicon", (node) => node.classList.contains("glyphicon-folder-close"));
         await firstItemLocator.first().dblclick();
