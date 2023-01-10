@@ -16,12 +16,9 @@ export let wholeWord = (pattern) => {
     return `^${pattern}$`
 }
 
-export let tolerateWhitespace = (pattern) => {
-    return `\\s*${pattern}\\s*`
-}
-
-export let wholeWordNoWhitespace = (pattern) => {
-    return textMatch(regexPattern(wholeWord(tolerateWhitespace(pattern))))
+export let contentRe = (text) => {
+    let t = text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/, "\\s+");
+    return textMatch(`/^\\s*${t}\\s*$/is`);
 }
 
 export let navigateToApp = async (page, appName) => {
@@ -158,24 +155,24 @@ export let loginWithEmail = async (page, appName, email="vagrant@localhost.local
     mailManager.deleteAllEmails();
 
     await page.goto(HOST + "/" + appName + "#/login-with/email");
-    let emailFormGroup = page.locator(".form-group", { has: page.locator(wholeWordNoWhitespace("Your Email")) });
+    let emailFormGroup = page.locator(".form-group", { has: page.locator(contentRe("Your Email")) });
     await page.waitForTimeout(1000);
     await emailFormGroup.locator("input").type(email);
     await page.waitForTimeout(1000);
-    await page.locator("button").locator(wholeWordNoWhitespace("Continue")).click();
+    await page.locator("button").locator(contentRe("Continue")).click();
     
     await page.goto(await mailManager.getFirstEmailLink(500, 30));
 
     await page.waitForTimeout(250);
     try {
-        let continueButton = page.locator("button", { has: page.locator(wholeWordNoWhitespace("Confirm")) });
+        let continueButton = page.locator("button", { has: page.locator(contentRe("Confirm")) });
         await continueButton.waitFor({ state: 'attached', timeout: 2500 });
         await continueButton.click();
     } 
     catch {
         await page.locator("input[name=displayName]").type("Test"); // TODO unique name
         await page.waitForTimeout(250);
-        await page.locator("form .form-group button.btn-primary", { has: page.locator(wholeWordNoWhitespace("Submit")) }).click(); // this wont work for other apps, need to change page source to add new selectors
+        await page.locator("form .form-group button.btn-primary", { has: page.locator(contentRe("Submit")) }).click(); // this wont work for other apps, need to change page source to add new selectors
     }
     await page.waitForURL(`${HOST}/${appName}#/simulations`)
 }
@@ -184,7 +181,7 @@ export let navigateToSimulation = async (page, simFolderNames) => {
     for (var path of simFolderNames) {
         //await page.waitForTimeout(1000);
         await page.locator("div.sr-thumbnail span")
-        .locator(wholeWordNoWhitespace(path)).click();
+        .locator(contentRe(path)).click();
         await page.waitForTimeout(500);
     }
 }
@@ -209,13 +206,13 @@ export let openSimulationOptionsMenu = async(page) => {
 
 export let discardSimulationChanges = async(page) => {
     await openSimulationOptionsMenu(page);
-    await page.locator(wholeWordNoWhitespace("Discard Changes to Example")).click();
-    await page.locator("div.modal-dialog").locator(wholeWordNoWhitespace("Discard Changes")).click();
+    await page.locator(contentRe("Discard Changes to Example")).click();
+    await page.locator("div.modal-dialog").locator(contentRe("Discard Changes")).click();
 }
 
 export let findPlotByTitle = (page, title) => {
     //return page.locator(`div[data-panel-title*="${title}"]`);
-    return page.locator("div.panel", {has: page.locator(wholeWordNoWhitespace(title))});
+    return page.locator("div.panel", {has: page.locator(contentRe(title))});
 }
 
 export let waitForPlotToLoad = async (plotLocator, timeout) => {
@@ -262,10 +259,10 @@ export let startDownload = async (page, downloadCausePromise) => {
 
 export let downloadSimulationZip = async (page) => {
     await page.locator(".sr-settings-menu-toggle").click();
-    await page.locator(wholeWordNoWhitespace("Export as ZIP")).click();
+    await page.locator(contentRe("Export as ZIP")).click();
 }
 
 export let downloadPythonSource = async (page) => {
     await page.locator(".sr-settings-menu-toggle").click();
-    await page.locator(wholeWordNoWhitespace("Python Source")).click();
+    await page.locator(contentRe("Python Source")).click();
 }

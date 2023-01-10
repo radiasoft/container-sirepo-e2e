@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test');
-const { loginIfNeeded, navigateToApp, openPanelOptions, navigateToSimulation, wholeWordNoWhitespace, findPlotByTitle, waitForPlotToLoad, getDownloadContents, navigateToFirstSimulation, discardSimulationChanges, waitForPlotLoading, startDownload, downloadSimulationZip, downloadPythonSource, HOST } = require('../testing-utils.js')
+const { loginIfNeeded, navigateToApp, openPanelOptions, navigateToSimulation, contentRe, wholeWordNoWhitespace, findPlotByTitle, waitForPlotToLoad, getDownloadContents, navigateToFirstSimulation, discardSimulationChanges, waitForPlotLoading, startDownload, downloadSimulationZip, downloadPythonSource, HOST } = require('../testing-utils.js')
 
 test('SRW Login With Email', async({ page, context }) => {
     await context.clearCookies();
@@ -35,13 +35,13 @@ test('SRW Discard Changes To Example', async ({ page, context }) => {
 })*/
 
 const openNewFolderMenu = async (page) => {
-    await page.locator("a", { has: page.locator(wholeWordNoWhitespace("New Folder")) }).click();
+    await page.locator("a", { has: page.locator(contentRe("New Folder")) }).click();
 }
 
 const TEST_FOLDER_NAME = 'Test Folder';
 
 const namedFolderLocator = (page, name) => {
-    return page.locator('.sr-thumbnail-item', { has: page.locator(wholeWordNoWhitespace(name))});
+    return page.locator('.sr-thumbnail-item', { has: page.locator(contentRe(name))});
 }
 
 /*test('SRW Create & Delete Folder', async ({page}) => {
