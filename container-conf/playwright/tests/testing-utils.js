@@ -1,7 +1,9 @@
 let fs = require("fs");
 let exec = require('child_process').exec;
 
-export let HOST = "http://localhost:8000";
+// be a function that returns appName. And maybe this should be an object.
+export let HTTP_PREFIX = process.env.SIREPO_E2E_HTTP + "/";
+export let EMAIL_ADDR = process.env.SIREPO_E2E_EMAIL;
 let NEEDS_EMAIL_LOGIN = true;
 
 export let textMatch = (pattern) => {
@@ -22,7 +24,7 @@ export let contentRe = (text) => {
 }
 
 export let navigateToApp = async (page, appName) => {
-    await page.goto(HOST + "/" + appName);
+    await page.goto(HTTP_PREFIX + appName);
 }
 
 export class MailManager {
@@ -48,13 +50,13 @@ export class MailManager {
     listMail = () => {
         return fs.readdirSync(this.mailPath);
     }
- 
+
     mailAbsPath = (mailFile) => {
         return this.mailPath + "/" + mailFile;
     }
 
     getMailString = (mailFile) => {
-        return fs.readFileSync(this.mailAbsPath(mailFile), { encoding: "utf-8" });   
+        return fs.readFileSync(this.mailAbsPath(mailFile), { encoding: "utf-8" });
     }
 
     getSignInLink = (mailString) => {
@@ -98,7 +100,7 @@ export class MailManager {
                 if (files.length > 0) {
                     clearInterval(t);
                     resolve(files);
-                } 
+                }
                 else {
                     retriesLeft--;
                     if (retriesLeft < 0) {
@@ -140,27 +142,27 @@ async function getUserHome() {
 export let loginIfNeeded = async (page, appName) => {
     if (NEEDS_EMAIL_LOGIN) {
         await loginWithEmail(page, appName);
-    } 
+    }
     else {
         await loginAsGuest(page, appName);
     }
 }
 
 export let loginAsGuest = async (page, appName) => {
-    await page.goto(HOST + "/" + appName + "#/login-with/guest");
+    await page.goto(HTTP_PREFIX + appName + "#/login-with/guest");
 }
 
-export let loginWithEmail = async (page, appName, email="vagrant@localhost.localdomain") => {
+export let loginWithEmail = async (page, appName, email=EMAIL_ADDR) => {
     let mailManager = new MailManager((await getUserHome()) + "/mail");
     mailManager.deleteAllEmails();
 
-    await page.goto(HOST + "/" + appName + "#/login-with/email");
+    await page.goto(HTTP_PREFIX + appName + "#/login-with/email");
     let emailFormGroup = page.locator(".form-group", { has: page.locator(contentRe("Your Email")) });
     await page.waitForTimeout(1000);
     await emailFormGroup.locator("input").type(email);
     await page.waitForTimeout(1000);
     await page.locator("button").locator(contentRe("Continue")).click();
-    
+
     await page.goto(await mailManager.getFirstEmailLink(500, 30));
 
     await page.waitForTimeout(250);
@@ -168,13 +170,13 @@ export let loginWithEmail = async (page, appName, email="vagrant@localhost.local
         let continueButton = page.locator("button", { has: page.locator(contentRe("Confirm")) });
         await continueButton.waitFor({ state: 'attached', timeout: 2500 });
         await continueButton.click();
-    } 
+    }
     catch {
         await page.locator("input[name=displayName]").type("Test"); // TODO unique name
         await page.waitForTimeout(250);
         await page.locator("form .form-group button.btn-primary", { has: page.locator(contentRe("Submit")) }).click(); // this wont work for other apps, need to change page source to add new selectors
     }
-    await page.waitForURL(`${HOST}/${appName}#/simulations`)
+    await page.waitForURL(`${HTTP_PREFIX}${appName}#/simulations`)
 }
 
 export let navigateToSimulation = async (page, simFolderNames) => {
@@ -235,7 +237,7 @@ export let getDownloadContents = (readable) => {
                 chunks.push(chunk);
             }
         });
-    
+
         readable.on('end', () => {
             const content = chunks.join('');
             resolve(content);
