@@ -6,11 +6,10 @@ Run inside of the root directory of this repo:
 
 ### Running tests
 
-To start the docker container and run all tests:
+To start the docker container and run all tests use
+[`etc/run.sh`](etc/run.sh). The general form is:
 
 ```sh
-export
-export
 docker run --rm -it --network=host \
    -e SIREPO_E2E_EMAIL=vagrant+<some-tag>@<local-host>
    -e SIREPO_E2E_HTTP=https://<remote-host>
